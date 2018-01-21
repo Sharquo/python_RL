@@ -7,6 +7,8 @@ from entity import Entity, blocking_entities
 from fov_functions import initialize_fov, recompute_fov
 from game_states import GameStates
 from map_objects.game_map import GameMap
+from map_objects.swatch import Swatch
+
 from render_functions import clear_all, render_all, RenderOrder
 
 def main():
@@ -28,16 +30,16 @@ def main():
 
     max_monsters_per_room = 3
 
-    colors = {
-        'dark_wall': libtcod.Color(0, 0, 100),
-        'dark_ground': libtcod.Color(50, 50, 150),
-        'light_wall': libtcod.Color(130, 110, 50),
-        'light_ground': libtcod.Color(200, 180, 50)
-    }
+#    colors = {
+#        'dark_wall': libtcod.Color(0, 0, 100),
+#        'dark_ground': libtcod.Color(50, 50, 150),
+#        'light_wall': libtcod.Color(130, 110, 50),
+#        'light_ground': libtcod.Color(200, 180, 50)
+#    }
 
     fighter_component = Fighter(hp=30, defense=2, power=5)
 
-    player = Entity(0, 0, '@', libtcod.white, 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
+    player = Entity(0, 0, '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
     entities = [player]
 
     libtcod.console_set_custom_font(
@@ -65,7 +67,7 @@ def main():
         if fov_recompute:
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
-        render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_width, screen_height, colors)
+        render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_width, screen_height, Swatch.colors)
 
         fov_recompute = False
         
