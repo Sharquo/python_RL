@@ -29,7 +29,7 @@ def render_all(con, entities, player, game_map, fov_map, fov_recompute, screen_w
 
                 elif game_map.tiles[x][y].explored:
                     if wall:
-                        libtcod.console_put_char_ex(con, x, y, '.', colors.get('Secondary'), colors.get('SecondaryDarkest'))
+                        libtcod.console_put_char_ex(con, x, y, '#', colors.get('Secondary'), colors.get('SecondaryDarkest'))
                         #libtcod.console_set_char_background(con, x, y, colors.get('Secondary'), libtcod.BKGND_SET)
                     else:
                         libtcod.console_put_char_ex(con, x, y, '.', colors.get('AlternateDarkest'), libtcod.black)

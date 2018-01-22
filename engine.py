@@ -43,7 +43,7 @@ def main():
     entities = [player]
 
     libtcod.console_set_custom_font(
-        'arial10x10.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_TCOD)
+        'terminal8x8.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
 
     libtcod.console_init_root(screen_width, screen_height, 'Generic RL', False)
 
