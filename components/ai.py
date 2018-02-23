@@ -1,4 +1,5 @@
 import libtcodpy as libtcod
+from scheduling_system import TimeSchedule
 
 class BasicMonster:
     def take_turn(self, target, fov_map, game_map, entities):

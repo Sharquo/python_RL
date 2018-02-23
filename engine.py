@@ -9,6 +9,7 @@ from game_messages import MessageLog
 from game_states import GameStates
 from map_objects.game_map import GameMap
 from map_objects.swatch import Swatch
+from scheduling_system import TimeSchedule
 
 from render_functions import clear_all, render_all, RenderOrder
 
@@ -40,10 +41,13 @@ def main():
 
     max_monsters_per_room = 3
 
-    fighter_component = Fighter(hp=30, defense=2, power=5)
+    fighter_component = Fighter(hp=30, defense=2, power=5, speed=2)
 
     player = Entity(0, 0, '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
     entities = [player]
+
+    schedule = TimeSchedule()
+    schedule.scheduleEvent(player, player.actionDelay())
 
     libtcod.console_set_custom_font(
         'terminal8x8.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
@@ -65,7 +69,7 @@ def main():
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
-    game_state = GameStates.PLAYERS_TURN
+    game_state = GameStates.PLAYERS_TURN   
 
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
@@ -101,12 +105,14 @@ def main():
                 if target:
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
-                else:                   
+
+                else:
                     player.move(dx, dy)
 
                     fov_recompute = True
+        
+            game_state = GameStates.ENEMY_TURN
 
-                game_state = GameStates.ENEMY_TURN
 
         if close:
             return True
@@ -132,11 +138,12 @@ def main():
         if game_state == GameStates.ENEMY_TURN:
             for entity in entities:
                 if entity.ai:
+                    schedule.scheduleEvent(entity, entity.actionDelay())
                     enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
 
                     for enemy_turn_result in enemy_turn_results:
                         message = enemy_turn_result.get('message')
-                        dead_entity = enemy_turn_result.get('dead')
+                        dead_entity = enemy_turn_result.get('dead')                       
 
                         if message:
                             message_log.add_message(message)
@@ -154,7 +161,7 @@ def main():
 
                     if game_state == GameStates.PLAYER_DEAD:
                         break
-                
+
             else:
                 game_state = GameStates.PLAYERS_TURN
 

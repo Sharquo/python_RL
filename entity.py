@@ -9,6 +9,10 @@ class Entity:
     """
     A generic object to represent characters, items, spells, etc.
     """
+
+    # Testing priority with a maximum speed of 10
+    base_time = 10.0
+
     def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None):
         self.x = x
         self.y = y
@@ -90,6 +94,9 @@ class Entity:
         dx = other.x - self.x
         dy = other.y - self.y
         return math.sqrt(dx ** 2 + dy ** 2)
+
+    def actionDelay(self):
+        return Entity.base_time / self.fighter.speed
         
 def blocking_entities(self, destination_x, destination_y):
     for entity in self:
