@@ -136,6 +136,7 @@ def main():
                 if dead_entity == player:
                     message, game_state = kill_player(dead_entity)
                 else:
+                    schedule.cancelEvent(dead_entity)
                     message = kill_monster(dead_entity)
 
                 message_log.add_message(message)
@@ -162,7 +163,7 @@ def main():
                             message, game_state = kill_player(dead_entity)
                         else:
                             message = kill_monster(dead_entity)
-                            schedule.cancelEvent(0)
+                            schedule.cancelEvent(dead_entity)
 
                         message_log.add_message(message)
 
