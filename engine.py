@@ -39,7 +39,7 @@ def main():
     fov_light_walls = True
     fov_radius = 10
 
-    max_monsters_per_room = 1
+    max_monsters_per_room = 4
 
     fighter_component = Fighter(hp=30, defense=2, power=5, speed=2)
 
@@ -175,8 +175,10 @@ def main():
 
                 schedule.scheduleEvent(entity, entity.actionDelay())
                 tick = schedule.nextEvent()
-        else:
-            game_state = GameStates.PLAYERS_TURN
+
+        if tick.ai is None and tick.fighter is None:
+                schedule.cancelEvent(tick)
+                tick = schedule.nextEvent()
 
 if __name__ == '__main__':
     main()
