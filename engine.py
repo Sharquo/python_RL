@@ -111,18 +111,13 @@ def main():
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
 
-                    tick = schedule.nextEvent()
-
                 else:
                     player.move(dx, dy)
-
                     fov_recompute = True
-
-                    tick = schedule.nextEvent()
         
                 game_state = GameStates.ENEMY_TURN
                 schedule.scheduleEvent(player, player.actionDelay())
-
+                tick = schedule.nextEvent()
 
         if close:
             return True
@@ -147,36 +142,40 @@ def main():
 
         if tick.ai:
             game_state = GameStates.ENEMY_TURN
-            for entity in entities:
-                if entity.ai:
-                    tick = schedule.nextEvent()
-                    enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+            ''' This is looping through every entity in the list of entities and executing their turn but we should just be executing the turn
+            for this individual entity '''
+            ''' for entity in entities: '''
+            entity = tick
+                
+            if entity.ai:
+                enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
 
-                    for enemy_turn_result in enemy_turn_results:
-                        message = enemy_turn_result.get('message')
-                        dead_entity = enemy_turn_result.get('dead')                       
+                for enemy_turn_result in enemy_turn_results:
+                    message = enemy_turn_result.get('message')
+                    dead_entity = enemy_turn_result.get('dead')                       
 
-                        if message:
-                            message_log.add_message(message)
+                    if message:
+                        message_log.add_message(message)
 
-                        if dead_entity:
-                            if dead_entity == player:
-                                message, game_state = kill_player(dead_entity)
-                            else:
-                                message = kill_monster(dead_entity)
-                                schedule.cancelEvent(0)
+                    if dead_entity:
+                        if dead_entity == player:
+                            message, game_state = kill_player(dead_entity)
+                        else:
+                            message = kill_monster(dead_entity)
+                            schedule.cancelEvent(0)
 
-                            message_log.add_message(message)
+                        message_log.add_message(message)
 
-                            if game_state == GameStates.PLAYER_DEAD:
-                                break
+                        if game_state == GameStates.PLAYER_DEAD:
+                            break
 
-                    if game_state == GameStates.PLAYER_DEAD:
-                        break
+                if game_state == GameStates.PLAYER_DEAD:
+                    break
 
-                    schedule.scheduleEvent(entity, entity.actionDelay())
-            else:
-                game_state = GameStates.PLAYERS_TURN
+                schedule.scheduleEvent(entity, entity.actionDelay())
+                tick = schedule.nextEvent()
+        else:
+            game_state = GameStates.PLAYERS_TURN
 
 if __name__ == '__main__':
     main()
