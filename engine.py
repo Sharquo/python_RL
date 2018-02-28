@@ -39,7 +39,7 @@ def main():
     fov_light_walls = True
     fov_radius = 10
 
-    max_monsters_per_room = 3
+    max_monsters_per_room = 1
 
     fighter_component = Fighter(hp=30, defense=2, power=5, speed=2)
 
@@ -47,7 +47,6 @@ def main():
     entities = [player]
 
     schedule = TimeSchedule()
-    schedule.scheduleEvent(player, player.actionDelay())
 
     libtcod.console_set_custom_font(
         'terminal8x8.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
@@ -59,6 +58,11 @@ def main():
 
     game_map = GameMap(map_width, map_height)
     game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
+
+    for entity in entities:
+        schedule.scheduleEvent(entity, entity.actionDelay())
+
+    tick = schedule.nextEvent()
 
     fov_recompute = True
 
@@ -94,7 +98,8 @@ def main():
 
         player_turn_results = []
 
-        if move and game_state == GameStates.PLAYERS_TURN:
+        if move and tick.name == 'Player':
+            game_state = GameStates.PLAYERS_TURN
             dx, dy = move
             destination_x = player.x + dx
             destination_y = player.y + dy
@@ -106,12 +111,17 @@ def main():
                     attack_results = player.fighter.attack(target)
                     player_turn_results.extend(attack_results)
 
+                    tick = schedule.nextEvent()
+
                 else:
                     player.move(dx, dy)
 
                     fov_recompute = True
+
+                    tick = schedule.nextEvent()
         
-            game_state = GameStates.ENEMY_TURN
+                game_state = GameStates.ENEMY_TURN
+                schedule.scheduleEvent(player, player.actionDelay())
 
 
         if close:
@@ -135,10 +145,11 @@ def main():
 
                 message_log.add_message(message)
 
-        if game_state == GameStates.ENEMY_TURN:
+        if tick.ai:
+            game_state = GameStates.ENEMY_TURN
             for entity in entities:
                 if entity.ai:
-                    schedule.scheduleEvent(entity, entity.actionDelay())
+                    tick = schedule.nextEvent()
                     enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
 
                     for enemy_turn_result in enemy_turn_results:
@@ -153,6 +164,7 @@ def main():
                                 message, game_state = kill_player(dead_entity)
                             else:
                                 message = kill_monster(dead_entity)
+                                schedule.cancelEvent(0)
 
                             message_log.add_message(message)
 
@@ -162,6 +174,7 @@ def main():
                     if game_state == GameStates.PLAYER_DEAD:
                         break
 
+                    schedule.scheduleEvent(entity, entity.actionDelay())
             else:
                 game_state = GameStates.PLAYERS_TURN
 
