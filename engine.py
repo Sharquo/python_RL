@@ -1,11 +1,12 @@
 import libtcodpy as libtcod
 
 from components.fighter import Fighter
+from components.inventory import Inventory
 from death_functions import kill_monster, kill_player
 from input_handlers import handle_keys
 from entity import Entity, blocking_entities
 from fov_functions import initialize_fov, recompute_fov
-from game_messages import MessageLog
+from game_messages import Message, MessageLog
 from game_states import GameStates
 from map_objects.game_map import GameMap
 from map_objects.swatch import Swatch
@@ -43,8 +44,10 @@ def main():
     max_items_per_room = 2
 
     fighter_component = Fighter(hp=30, defense=2, power=5, speed=2)
+    inventory_component = Inventory(26)
 
-    player = Entity(0, 0, 'Actor', '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
+    player = Entity(0, 0, 'Actor', '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR,
+                    fighter=fighter_component, inventory=inventory_component)
     entities = [player]
 
     schedule = TimeSchedule()
@@ -76,7 +79,8 @@ def main():
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
-    game_state = GameStates.PLAYERS_TURN   
+    game_state = GameStates.PLAYERS_TURN
+    previous_game_state = game_state   
 
     while not libtcod.console_is_window_closed():
         libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
@@ -85,7 +89,7 @@ def main():
             recompute_fov(fov_map, player.x, player.y, fov_radius, fov_light_walls, fov_algorithm)
 
         render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, 
-                   screen_height, bar_width, panel_height, panel_y, mouse, Swatch.colors)
+                   screen_height, bar_width, panel_height, panel_y, mouse, Swatch.colors, game_state)
 
         fov_recompute = False
         
@@ -93,9 +97,12 @@ def main():
 
         clear_all(con, entities)
 
-        action = handle_keys(key)
+        action = handle_keys(key, game_state)
 
         move = action.get('move')
+        pickup = action.get('pickup')
+        show_inventory = action.get('show_inventory')
+        inventory_index = action.get('inventory_index')
         close = action.get('close') 
         fullscreen = action.get('fullscreen')
 
@@ -122,8 +129,34 @@ def main():
                 schedule.scheduleEvent(player, player.actionDelay())
                 tick = schedule.nextEvent()
 
+        elif pickup and tick.name == 'Player':
+            for entity in entities:
+                if entity.item and entity.x == player.x and entity.y == player.y:
+                    pickup_results = player.inventory.add_item(entity)
+                    player_turn_results.extend(pickup_results)
+
+                    break
+            else:
+                message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
+
+            game_state = GameStates.ENEMY_TURN
+            schedule.scheduleEvent(player, player.actionDelay())
+            tick = schedule.nextEvent()
+
+        if show_inventory:
+            previous_game_state = game_state
+            game_state = GameStates.SHOW_INVENTORY
+
+        if inventory_index is not None and previous_game_state != GameStates.PLAYER_DEAD and inventory_index < len(
+                player.inventory.items):
+                item = player.inventory.items[inventory_index]
+                print(item)
+
         if close:
-            return True
+            if game_state == GameStates.SHOW_INVENTORY:
+                game_state = previous_game_state
+            else:
+                return True
 
         if fullscreen:
             libtcod.console_set_fullscreen(not libtcod.console_is_fullscreen())
@@ -131,6 +164,7 @@ def main():
         for player_turn_result in player_turn_results:
             message = player_turn_result.get('message')
             dead_entity = player_turn_result.get('dead')
+            item_added = player_turn_result.get('item_added')
 
             if message:
                 message_log.add_message(message)
@@ -143,6 +177,9 @@ def main():
                     message = kill_monster(dead_entity)
 
                 message_log.add_message(message)
+
+            if item_added:
+                entities.remove(item_added)
 
         if tick.ai:
             game_state = GameStates.ENEMY_TURN
@@ -174,7 +211,8 @@ def main():
                             break
 
                 schedule.scheduleEvent(entity, entity.actionDelay())
-                tick = schedule.nextEvent()         
+                tick = schedule.nextEvent()
+                game_state = GameStates.PLAYERS_TURN                        
 
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)
