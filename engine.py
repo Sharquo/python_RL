@@ -40,10 +40,11 @@ def main():
     fov_radius = 10
 
     max_monsters_per_room = 4
+    max_items_per_room = 2
 
     fighter_component = Fighter(hp=30, defense=2, power=5, speed=2)
 
-    player = Entity(0, 0, '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
+    player = Entity(0, 0, 'Actor', '@', Swatch.colors.get('DbSun'), 'Player', blocks=True, render_order=RenderOrder.ACTOR, fighter=fighter_component)
     entities = [player]
 
     schedule = TimeSchedule()
@@ -57,10 +58,12 @@ def main():
     panel = libtcod.console_new(screen_width, panel_height)
 
     game_map = GameMap(map_width, map_height)
-    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, max_monsters_per_room)
+    game_map.make_map(max_rooms, room_min_size, room_max_size, map_width, map_height, player, entities, 
+                      max_monsters_per_room, max_items_per_room)
 
     for entity in entities:
-        schedule.scheduleEvent(entity, entity.actionDelay())
+        if entity.group == 'Actor':
+            schedule.scheduleEvent(entity, entity.actionDelay())
 
     tick = schedule.nextEvent()
 
@@ -145,7 +148,6 @@ def main():
             game_state = GameStates.ENEMY_TURN
             ''' This is looping through every entity in the list of entities and executing their turn but we should just be executing the turn
             for this individual entity '''
-            ''' for entity in entities: '''
             entity = tick
                 
             if entity.ai:
@@ -168,13 +170,11 @@ def main():
                         message_log.add_message(message)
 
                         if game_state == GameStates.PLAYER_DEAD:
+                            player.name = 'Dead!'
                             break
 
-                if game_state == GameStates.PLAYER_DEAD:
-                    break
-
                 schedule.scheduleEvent(entity, entity.actionDelay())
-                tick = schedule.nextEvent()
+                tick = schedule.nextEvent()         
 
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)

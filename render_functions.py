@@ -43,26 +43,22 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
                 if visible:
                     if wall:
                         libtcod.console_put_char_ex(con, x, y, '#', colors.get('SecondaryLighter'), colors.get('SecondaryDarker'))
-                        #libtcod.console_set_char_background(con, x, y, colors.get('SecondaryLighter'), libtcod.BKGND_SET)
                     else:
                         libtcod.console_put_char_ex(con, x, y, '.', colors.get('Alternate'), colors.get('DbDark'))
-                        #libtcod.console_set_char_background(con, x, y, colors.get('Alternate'), libtcod.BKGND_SET)
 
                     game_map.tiles[x][y].explored = True
 
                 elif game_map.tiles[x][y].explored:
                     if wall:
                         libtcod.console_put_char_ex(con, x, y, '#', colors.get('Secondary'), colors.get('SecondaryDarkest'))
-                        #libtcod.console_set_char_background(con, x, y, colors.get('Secondary'), libtcod.BKGND_SET)
                     else:
                         libtcod.console_put_char_ex(con, x, y, '.', colors.get('AlternateDarkest'), libtcod.black)
-                        #libtcod.console_set_char_background(con, x, y, colors.get('AlternateDarkest'), libtcod.BKGND_SET)
 
     entity_render_order = sorted(entities, key=lambda x: x.render_order.value)
 
     # Draw all entites in the list.
     for entity in entity_render_order:
-        draw_entity(con, entity, fov_map)
+        draw_entity(con, entity, fov_map, game_map)
 
     libtcod.console_blit(con, 0, 0, screen_width, screen_height, 0, 0, 0)
 
@@ -90,8 +86,12 @@ def clear_all(con, entities):
         clear_entity(con, entity)
 
 
-def draw_entity(con, entity, fov_map):
+def draw_entity(con, entity, fov_map, game_map):
     if libtcod.map_is_in_fov(fov_map, entity.x, entity.y):
+        libtcod.console_set_default_foreground(con, entity.color)
+        libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
+    
+    elif game_map.tiles[entity.x][entity.y].explored and entity.render_order != RenderOrder.ACTOR:
         libtcod.console_set_default_foreground(con, entity.color)
         libtcod.console_put_char(con, entity.x, entity.y, entity.char, libtcod.BKGND_NONE)
 

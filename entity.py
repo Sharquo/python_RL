@@ -13,9 +13,11 @@ class Entity:
     # Testing priority with a maximum speed of 10
     base_time = 10.0
 
-    def __init__(self, x, y, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None):
+    def __init__(self, x, y, group, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None, 
+                 item=None, inventory=None):
         self.x = x
         self.y = y
+        self.group = group
         self.char = char
         self.color = color
         self.name = name
@@ -23,12 +25,20 @@ class Entity:
         self.render_order = render_order
         self.fighter = fighter
         self.ai = ai
+        self.item = item
+        self.inventory = inventory
 
         if self.fighter:
             self.fighter.owner = self
 
         if self.ai:
             self.ai.owner = self
+
+        if self.item:
+            self.item.owner = self
+
+        if self.inventory:
+            self.inventory.owner = self
 
     def move(self, dx, dy):
         # Move the entity by a given amount
