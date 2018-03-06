@@ -109,7 +109,6 @@ def main():
         player_turn_results = []
 
         if move and tick.name == 'Player':
-            game_state = GameStates.PLAYERS_TURN
             dx, dy = move
             destination_x = player.x + dx
             destination_y = player.y + dy
@@ -125,7 +124,6 @@ def main():
                     player.move(dx, dy)
                     fov_recompute = True
         
-                game_state = GameStates.ENEMY_TURN
                 schedule.scheduleEvent(player, player.actionDelay())
                 tick = schedule.nextEvent()
 
@@ -139,7 +137,6 @@ def main():
             else:
                 message_log.add_message(Message('There is nothing here to pick up.', libtcod.yellow))
 
-            game_state = GameStates.ENEMY_TURN
             schedule.scheduleEvent(player, player.actionDelay())
             tick = schedule.nextEvent()
 
@@ -182,9 +179,7 @@ def main():
                 entities.remove(item_added)
 
         if tick.ai:
-            game_state = GameStates.ENEMY_TURN
-            ''' This is looping through every entity in the list of entities and executing their turn but we should just be executing the turn
-            for this individual entity '''
+            
             entity = tick
                 
             if entity.ai:
@@ -211,8 +206,7 @@ def main():
                             break
 
                 schedule.scheduleEvent(entity, entity.actionDelay())
-                tick = schedule.nextEvent()
-                game_state = GameStates.PLAYERS_TURN                        
+                tick = schedule.nextEvent()                    
 
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)

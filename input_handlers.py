@@ -3,9 +3,9 @@ import libtcodpy as libtcod
 from game_states import GameStates
 
 def handle_keys(key, game_state):
-    if game_state == GameStates.PLAYERS_TURN:
+    if game_state != GameStates.PLAYER_DEAD:
         return handle_player_turn_keys(key)
-    elif game_state == GameStates.PLAYER_DEAD:
+    else:
         return handle_player_dead_keys(key)
 
     return {}
