@@ -240,6 +240,7 @@ def main():
                 
             if entity.ai:
                 enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
+                fov_recompute = True
 
                 for enemy_turn_result in enemy_turn_results:
                     message = enemy_turn_result.get('message')
