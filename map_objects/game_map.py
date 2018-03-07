@@ -6,7 +6,8 @@ from components.fighter import Fighter
 from components.item import Item
 
 from entity import Entity
-from item_functions import cast_lightning, heal
+from game_messages import Message
+from item_functions import cast_fireball, cast_lightning, heal
 from map_objects.rectangle import Rect
 from map_objects.tile import Tile
 from render_functions import RenderOrder
@@ -133,6 +134,11 @@ class GameMap:
                     item_component = Item(use_function=heal, amount=4)
                     item = Entity(x, y, 'Item', '!', libtcod.violet, 'Healing Potion', render_order=RenderOrder.ITEM,
                                   item=item_component)
+
+                elif item_chance < 85:
+                    item_component = Item(use_function=cast_fireball, targeting=True, targeting_message=Message(
+                        'Where to?', libtcod.light_cyan), damage=12, radius=3)
+                    item = Entity(x, y, 'Item', '?', libtcod.red, 'Fireball Scroll', render_order=RenderOrder.ITEM, item=item_component)
 
                 else:
                     item_component = Item(use_function=cast_lightning, damage=20, maximum_range=5)
