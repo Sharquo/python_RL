@@ -1,8 +1,10 @@
 import libtcodpy as libtcod
 
 from death_functions import kill_monster, kill_player
-from input_handlers import handle_keys, handle_mouse
+from input_handlers import handle_keys, handle_mouse, handle_main_menu
 from loader_functions.initialize_new_game import get_constants, get_game_variables
+from loader_functions.data_loaders import load_game, save_game
+from menus import main_menu, message_box
 from entity import blocking_entities
 from fov_functions import initialize_fov, recompute_fov
 from game_messages import Message
@@ -12,27 +14,7 @@ from scheduling_system import TimeSchedule
 
 from render_functions import clear_all, render_all
 
-def main():
-    constants = get_constants()
-
-    schedule = TimeSchedule()
-
-    libtcod.console_set_custom_font(
-        'terminal8x8.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
-
-    libtcod.console_init_root(constants['screen_width'], constants['screen_height'], constants['window_title'], False)
-
-    con = libtcod.console_new(constants['screen_width'], constants['screen_height'])
-    panel = libtcod.console_new(constants['screen_width'], constants['panel_height'])
-
-    player, entities, game_map, message_log, game_state = get_game_variables(constants)
-
-    for entity in entities:
-        if entity.group == 'Actor':
-            schedule.scheduleEvent(entity, entity.actionDelay())
-
-    tick = schedule.nextEvent()
-
+def play_game(player, entities, game_map, message_log, game_state, tick, schedule, con, panel, constants):
     fov_recompute = True
 
     fov_map = initialize_fov(game_map)
@@ -40,7 +22,17 @@ def main():
     key = libtcod.Key()
     mouse = libtcod.Mouse()
 
+    game_state = GameStates.PLAYERS_TURN
     previous_game_state = game_state
+
+    schedule = TimeSchedule()
+
+    for entity in entities:
+        if entity.group == 'Actor':
+            schedule.scheduleEvent(entity, entity.actionDelay())
+
+    tick = schedule.nextEvent()
+
 
     targeting_item = None   
 
@@ -141,6 +133,8 @@ def main():
             elif game_state == GameStates.TARGETING:
                 player_turn_results.append({'targeting_cancelled': True})
             else:
+                save_game(player, entities, game_map, message_log, game_state, tick, schedule)
+
                 return True
 
         if fullscreen:
@@ -230,6 +224,74 @@ def main():
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)
                 tick = schedule.nextEvent()
+
+def main():
+    constants = get_constants()
+
+    libtcod.console_set_custom_font(
+        'terminal8x8.png', libtcod.FONT_TYPE_GRAYSCALE | libtcod.FONT_LAYOUT_ASCII_INROW)
+
+    libtcod.console_init_root(constants['screen_width'], constants['screen_height'], constants['window_title'], False)
+
+    con = libtcod.console_new(constants['screen_width'], constants['screen_height'])
+    panel = libtcod.console_new(constants['screen_width'], constants['panel_height'])
+
+    player = None
+    entities = []
+    game_map = None
+    message_log = None
+    game_state = None
+    tick = None
+    schedule = None
+
+    show_main_menu = True
+    show_load_error_message = False
+
+    main_menu_background_image = libtcod.image_load('menu_background.png')
+
+    key = libtcod.Key()
+    mouse = libtcod.Mouse()
+
+    while not libtcod.console_is_window_closed():
+        libtcod.sys_check_for_event(libtcod.EVENT_KEY_PRESS | libtcod.EVENT_MOUSE, key, mouse)
+
+        if show_main_menu:
+            main_menu(con, main_menu_background_image, constants['screen_width'], constants['screen_height'])
+
+            if show_load_error_message:
+                message_box(con, 'No save game to load', 50, constants['screen_width'], constants['screen_height'])
+
+            libtcod.console_flush()
+
+            action = handle_main_menu(key)
+
+            new_game = action.get('new_game')
+            load_saved_game = action.get('load_game')
+            close_game = action.get('close') 
+
+            if show_load_error_message and (new_game or load_saved_game or close_game):
+                show_load_error_message = False
+            elif new_game:
+                player, entities, game_map, message_log, game_state = get_game_variables(constants)
+                game_state = GameStates.PLAYERS_TURN
+
+                show_main_menu = False
+            elif load_saved_game:
+                try:
+                    player, entities, game_map, message_log, game_state, tick, schedule = load_game()
+                    show_main_menu = False
+                except FileNotFoundError:
+                    show_load_error_message = True
+            elif close_game:
+                break
+
+        else:
+            libtcod.console_clear(con)
+            play_game(player, entities, game_map, message_log, game_state, tick, schedule, con, panel, constants)
+
+            show_main_menu = True
+
+    
 
 if __name__ == '__main__':
     main()
