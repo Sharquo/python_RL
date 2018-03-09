@@ -3,3 +3,10 @@ Ideas!
 With a groan, you wake up on the stone floor of a dusty room.
 To your left, there is a small bag.
 To your right, there is a neatly written note.
+
+Planned features! (Not in order)
+-> Scrolling map
+-> Magic system
+-> Refactor combat system
+-> Inventory and stuff in the terminal?
+-> Performance concerns!
