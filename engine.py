@@ -147,7 +147,7 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
             item_consumed = player_turn_result.get('consumed')
             item_dropped = player_turn_result.get('item_dropped')
             targeting = player_turn_result.get('targeting')
-            targeting_cancelled = player_turn_result.get('targeting_canceled')
+            targeting_cancelled = player_turn_result.get('targeting_cancelled')
 
             if message:
                 message_log.add_message(message)
@@ -195,8 +195,7 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
             entity = tick
                 
             if entity.ai:
-                enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)
-                fov_recompute = True
+                enemy_turn_results = entity.ai.take_turn(player, fov_map, game_map, entities)              
 
                 for enemy_turn_result in enemy_turn_results:
                     message = enemy_turn_result.get('message')
@@ -219,7 +218,9 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
                             break
 
                 schedule.scheduleEvent(entity, entity.actionDelay())
-                tick = schedule.nextEvent()                    
+                tick = schedule.nextEvent() 
+
+                fov_recompute = True                   
 
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)

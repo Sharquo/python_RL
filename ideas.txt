@@ -12,3 +12,6 @@ Planned features! (Not in order)
 -> Performance concerns!
 
 Does the schedule really need to be saved with the rest of the game states?  Surely I can just initialise it during gameLoad() and newGame()?
+-> Sorted this out for now
+
+How am I going to do the rendering to improve performance?
