@@ -13,5 +13,7 @@ Planned features! (Not in order)
 
 Does the schedule really need to be saved with the rest of the game states?  Surely I can just initialise it during gameLoad() and newGame()?
 -> Sorted this out for now
+-> Not really.
+-> Think I need to re-initialise when moving down the stairs.  God knows what I'll do when it comes to moving back up.
 
 How am I going to do the rendering to improve performance?

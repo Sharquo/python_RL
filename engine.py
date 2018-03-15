@@ -61,6 +61,7 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
         show_inventory = action.get('show_inventory')
         drop_inventory = action.get('drop_inventory')
         inventory_index = action.get('inventory_index')
+        take_stairs = action.get('take_stairs')
         close = action.get('close') 
         fullscreen = action.get('fullscreen')
 
@@ -116,6 +117,24 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
 
             elif game_state == GameStates.DROP_INVENTORY:
                 player_turn_results.extend(player.inventory.drop_item(item))
+
+        if take_stairs and tick.name == 'Player':
+            for entity in entities:
+                if entity.stairs and entity.x == player.x and entity.y == player.y:
+                    entities = game_map.next_floor(player, message_log, constants)
+
+                    
+
+                    break
+            else:
+                message_log.add_message(Message('There are no stairs here.', libtcod.yellow))
+
+                fov_map = initialize_fov(game_map)
+                fov_recompute = True
+                libtcod.console_clear(con)
+
+                schedule.scheduleEvent(player, player.actionDelay())
+                tick = schedule.nextEvent()
 
         if game_state == GameStates.TARGETING:
             if left_click:
@@ -219,8 +238,6 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
 
                 schedule.scheduleEvent(entity, entity.actionDelay())
                 tick = schedule.nextEvent() 
-
-                fov_recompute = True                   
 
         if tick.ai is None and tick.fighter is None:
                 schedule.cancelEvent(tick)

@@ -14,7 +14,7 @@ class Entity:
     base_time = 10.0
 
     def __init__(self, x, y, group, char, color, name, blocks=False, render_order=RenderOrder.CORPSE, fighter=None, ai=None, 
-                 item=None, inventory=None):
+                 item=None, inventory=None, stairs=None):
         self.x = x
         self.y = y
         self.group = group
@@ -27,6 +27,7 @@ class Entity:
         self.ai = ai
         self.item = item
         self.inventory = inventory
+        self.stairs = stairs
 
         if self.fighter:
             self.fighter.owner = self
@@ -39,6 +40,9 @@ class Entity:
 
         if self.inventory:
             self.inventory.owner = self
+
+        if self.stairs:
+            self.stairs.owner = self
 
     def move(self, dx, dy):
         # Move the entity by a given amount
