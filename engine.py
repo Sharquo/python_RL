@@ -123,15 +123,13 @@ def play_game(player, entities, game_map, message_log, game_state, tick, schedul
                 if entity.stairs and entity.x == player.x and entity.y == player.y:
                     entities = game_map.next_floor(player, message_log, constants)
 
-                    
+                    fov_map = initialize_fov(game_map)
+                    fov_recompute = True
+                    libtcod.console_clear(con)
 
                     break
             else:
                 message_log.add_message(Message('There are no stairs here.', libtcod.yellow))
-
-                fov_map = initialize_fov(game_map)
-                fov_recompute = True
-                libtcod.console_clear(con)
 
                 schedule.scheduleEvent(player, player.actionDelay())
                 tick = schedule.nextEvent()
