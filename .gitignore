@@ -397,3 +397,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+savegame.bak
+savegame.dat
+savegame.dir
