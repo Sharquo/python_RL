@@ -41,10 +41,11 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     libtcod.console_print_ex(panel, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
-def move_camera(target_x, target_y):
+def move_camera(target_x, target_y, map_width, map_height, camera_x, camera_y, fov_recompute):
 
 	# New camera coordinates (top-left corner of the screen relative to the map)
-	x = target_x - camera_width / 2  #coordinates so that the target is at the center of the screen
+    # Coordinates so that the target is at the center of the screen
+	x = target_x - camera_width / 2  
 	y = target_y - camera_height / 2
  
 	# Make sure the camera doesn't see outside the map
@@ -60,15 +61,11 @@ def move_camera(target_x, target_y):
 def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, 
                bar_width, panel_height, panel_y, mouse, colors, game_state):
     # Draw all the tiles in the game map.
-
-    move_camera(player.x, player.y)
-
     if fov_recompute:
-        for y in range(camera_height):
-            for x in range(camera_width):
-                (map_x, map_y) = (camera_x + x, camera_y + y)
-                visible = libtcod.map_is_in_fov(fov_map, map_x, map_y)
-                wall = game_map.tiles[map_x][map_y].block_sight
+        for y in range(game_map.height):
+            for x in range(game_map.width):
+                visible = libtcod.map_is_in_fov(fov_map, x, y)
+                wall = game_map.tiles[x][y].block_sight
 
                 if visible:
                     if wall:
@@ -76,9 +73,9 @@ def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, m
                     else:
                         libtcod.console_put_char_ex(con, x, y, '.', colors.get('Alternate'), colors.get('DbDark'))
 
-                    game_map.tiles[map_x][map_y].explored = True
+                    game_map.tiles[x][y].explored = True
 
-                elif game_map.tiles[map_x][map_y].explored:
+                elif game_map.tiles[x][y].explored:
                     if wall:
                         libtcod.console_put_char_ex(con, x, y, '#', colors.get('Secondary'), colors.get('SecondaryDarkest'))
                     else:

@@ -21,6 +21,11 @@ def get_constants():
     screen_width = 80
     screen_height = 50
 
+    camera_width = 80
+    camera_height = 43
+    camera_x = 0
+    camera_y = 0
+
     bar_width = 20
     panel_height = 7
     panel_y = screen_height - panel_height
