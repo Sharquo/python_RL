@@ -5,12 +5,10 @@ from enum import Enum, auto
 from game_states import GameStates
 
 from menus import character_screen, inventory_menu, level_up_menu
+from loader_functions.initialize_new_game import get_constants
 
-camera_width = 80
-camera_height = 43
-camera_x = 0
+camera_x = 0 
 camera_y = 0
-
 
 class RenderOrder(Enum):
     STAIRS = auto()
@@ -41,29 +39,21 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     libtcod.console_print_ex(panel, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
-def move_camera(target_x, target_y, map_width, map_height, camera_x, camera_y, fov_recompute):
+def move_camera(target_x, target_y, camera_width, camera_height):
 
-	# New camera coordinates (top-left corner of the screen relative to the map)
-    # Coordinates so that the target is at the center of the screen
-	x = target_x - camera_width / 2  
-	y = target_y - camera_height / 2
- 
-	# Make sure the camera doesn't see outside the map
-	if x < 0: x = 0
-	if y < 0: y = 0
-	if x > map_width - camera_width - 1: x = map_width - camera_width - 1
-	if y > map_height - camera_height - 1: y = map_height - camera_height - 1
- 
-	if x != camera_x or y != camera_y: fov_recompute = True
- 
-	(camera_x, camera_y) = (x, y)
+    x = target_x - camera_width / 2
+    y = target_y - camera_height / 2
 
-def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, 
+    (camera_x, camera_y) = (x, y)
+
+def render_all(con, panel, entities, player, game_map, fov_map,camera_width, camera_height, fov_recompute, message_log, screen_width, screen_height, 
                bar_width, panel_height, panel_y, mouse, colors, game_state):
+    move_camera(player.x, player.y)
     # Draw all the tiles in the game map.
     if fov_recompute:
-        for y in range(game_map.height):
-            for x in range(game_map.width):
+        for y in range(camera_height):
+            for x in range(camera_width):
+                game_map.tiles[x][y] = (camera_x + x, camera_y + y)
                 visible = libtcod.map_is_in_fov(fov_map, x, y)
                 wall = game_map.tiles[x][y].block_sight
 
