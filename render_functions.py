@@ -5,10 +5,7 @@ from enum import Enum, auto
 from game_states import GameStates
 
 from menus import character_screen, inventory_menu, level_up_menu
-from loader_functions.initialize_new_game import get_constants
 
-camera_x = 0 
-camera_y = 0
 
 class RenderOrder(Enum):
     STAIRS = auto()
@@ -39,21 +36,12 @@ def render_bar(panel, x, y, total_width, name, value, maximum, bar_color, back_c
     libtcod.console_print_ex(panel, int(x + total_width / 2), y, libtcod.BKGND_NONE, libtcod.CENTER,
                              '{0}: {1}/{2}'.format(name, value, maximum))
 
-def move_camera(target_x, target_y, camera_width, camera_height):
-
-    x = target_x - camera_width / 2
-    y = target_y - camera_height / 2
-
-    (camera_x, camera_y) = (x, y)
-
-def render_all(con, panel, entities, player, game_map, fov_map,camera_width, camera_height, fov_recompute, message_log, screen_width, screen_height, 
+def render_all(con, panel, entities, player, game_map, fov_map, fov_recompute, message_log, screen_width, screen_height, 
                bar_width, panel_height, panel_y, mouse, colors, game_state):
-    move_camera(player.x, player.y)
     # Draw all the tiles in the game map.
     if fov_recompute:
-        for y in range(camera_height):
-            for x in range(camera_width):
-                game_map.tiles[x][y] = (camera_x + x, camera_y + y)
+        for y in range(game_map.height):
+            for x in range(game_map.width):
                 visible = libtcod.map_is_in_fov(fov_map, x, y)
                 wall = game_map.tiles[x][y].block_sight
 

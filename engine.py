@@ -12,7 +12,7 @@ from game_states import GameStates
 from map_objects.swatch import Swatch
 from scheduling_system import TimeSchedule
 
-from render_functions import clear_all, render_all, move_camera
+from render_functions import clear_all, render_all
 
 def play_game(player, entities, game_map, message_log, game_state, tick, schedule, con, panel, constants):
     fov_recompute = True

@@ -21,9 +21,6 @@ def get_constants():
     screen_width = 80
     screen_height = 50
 
-    camera_width = 80
-    camera_height = 43
-
     bar_width = 20
     panel_height = 7
     panel_y = screen_height - panel_height
@@ -58,8 +55,6 @@ def get_constants():
         'message_x': message_x,
         'message_width': message_width,
         'message_height': message_height,
-        'camera_width': camera_width,
-        'camera_height': camera_height,
         'map_width': map_width,
         'map_height': map_height,
         'room_max_size': room_max_size,
